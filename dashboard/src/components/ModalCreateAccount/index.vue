@@ -24,7 +24,7 @@
               'border-brand-danger': !!state.name.errorMessage
             }"
             class="block w-full px-4 py-3 mt-1 text-lg bg-gray-100 border-2 border-transparent rounded"
-            placeholder="jane.dae@gmail.com"
+            placeholder="Seu Nome"
           >
           <span
             v-if="!!state.name.errorMessage"
@@ -106,6 +106,11 @@ export default {
     const toast = useToast()
 
     const {
+      value: nameValue,
+      errorMessage: nameErrorMessage
+    } = useField('name', validateEmptyAndLength3)
+
+    const {
       value: emailValue,
       errorMessage: emailErrorMessage
     } = useField('email', validateEmptyAndEmail)
@@ -118,6 +123,10 @@ export default {
     const state = reactive({
       hasErrors: false,
       isLoading: false,
+      name: {
+        value: nameValue,
+        errorMessage: nameErrorMessage
+      },
       email: {
         value: emailValue,
         errorMessage: emailErrorMessage
@@ -127,35 +136,46 @@ export default {
         errorMessage: passwordErrorMessage
       }
     })
+
+    async function login ({ email, password }) {
+      const { data, errors } = await services.auth.login({ email, password })
+
+      if (!errors) {
+        window.localStorage.setItem('token', data.token)
+        router.push({ name: 'Feedbacks' })
+        modal.close()
+      }
+
+      state.isLoading = false
+    }
+
     async function handleSubmit () {
       try {
         toast.clear()
         state.isLoading = true
-        const { data, errors } = await services.auth.login({
+
+        const { errors } = await services.auth.register({
+          name: state.name.value,
           email: state.email.value,
           password: state.password.value
         })
+
         if (!errors) {
-          window.localStorage.setItem('token', data.token)
-          router.push({ name: 'Feedbacks' })
-          state.isLoading = false
-          modal.close()
+          await login({
+            email: state.email.value,
+            password: state.password.value
+          })
           return
         }
-        if (errors.status === 404) {
-          toast.error('E-mail não encontrado')
-        }
-        if (errors.status === 401) {
-          toast.error('E-mail/senha inválidos')
-        }
+
         if (errors.status === 400) {
-          toast.error('Ocorreu um erro ao fazer o login')
+          toast.error('Ocorreu um erro ao criar sua conta')
         }
         state.isLoading = false
       } catch (error) {
         state.isLoading = false
         state.hasErrors = !!error
-        toast.error('Ocorreu um erro ao fazer o login')
+        toast.error('Ocorreu um erro ao criar sua conta')
       }
     }
     return {
