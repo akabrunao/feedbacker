@@ -5,9 +5,10 @@
 <script>
 import Loading from './Loading.vue'
 import Copy from './Copy'
+import ChevronDown from './ChevronDown'
 
 export default {
-  components: { Loading, Copy },
+  components: { Loading, Copy, ChevronDown },
   props: {
     name: { type: String, required: true }
   }
