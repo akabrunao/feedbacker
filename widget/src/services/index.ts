@@ -1,4 +1,5 @@
 import axios from 'axios'
+import FeedbacksServices from './feedbacks'
 
 const API_ENVS = {
   production: 'https://backend-feedbacker.vercel.app/',
@@ -19,7 +20,6 @@ httpClient.interceptors.response.use((response) => {
   error.request.status === 500
 
   if (canThrowAnError) {
-
     throw new Error(error.message)
   }
 
@@ -27,5 +27,5 @@ httpClient.interceptors.response.use((response) => {
 })
 
 export default {
-
+  feedbacks: FeedbacksServices(httpClient)
 }
